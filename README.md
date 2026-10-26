@@ -18,3 +18,18 @@ Tailwind CSS 4 · shadcn/ui · Zod 4 · React Hook Form · Zustand · MapLibre G
 npm install
 npm run dev
 ```
+
+The dev server proxies `/api` to the backend at `http://localhost:3000`.
+
+## API client
+
+The typed client in `src/shared/api/generated` is generated from `openapi/openapi.json`, a
+committed snapshot of the backend's OpenAPI contract, so builds and tests never need a running
+backend. When the contract changes:
+
+```bash
+npm run api:pull   # refresh the snapshot from the backend dev server
+npm run api:gen    # regenerate the client from the snapshot
+```
+
+`npm run api:pull -- <path>` reads the document from a file instead.

@@ -7,6 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
+    "api:pull": "node scripts/pull-openapi.ts",
+    "api:gen": "openapi-ts",
     "typecheck": "tsc -b",
     "lint": "oxlint",
     "lint:fsd": "steiger ./src",

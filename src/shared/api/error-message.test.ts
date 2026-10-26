@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { ApiError } from './api-error'
 import { getErrorMessage } from './error-message'
+import { NetworkError } from './network-error'
 
 describe('getErrorMessage', () => {
   it('prefers the detail of an API error', () => {
@@ -19,7 +20,9 @@ describe('getErrorMessage', () => {
   })
 
   it('explains that the server is unreachable', () => {
-    expect(getErrorMessage(new TypeError('Failed to fetch'))).toMatch(/can't reach the server/i)
+    const error = new NetworkError({ cause: new TypeError('Load failed') })
+
+    expect(getErrorMessage(error)).toMatch(/can't reach the server/i)
   })
 
   it('uses the message of any other error', () => {
