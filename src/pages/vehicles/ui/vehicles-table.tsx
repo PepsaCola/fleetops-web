@@ -1,6 +1,4 @@
 import { useQuery } from '@tanstack/react-query'
-import { functionalUpdate, type PaginationState } from '@tanstack/react-table'
-import { useMemo } from 'react'
 
 import {
   VEHICLE_TYPE_LABELS,
@@ -8,12 +6,7 @@ import {
   vehicleQueries,
   type Vehicle,
 } from '@/entities/vehicle'
-import {
-  createServerColumnHelper,
-  sortingFromParam,
-  sortingToParam,
-  useServerTable,
-} from '@/shared/lib/table'
+import { createServerColumnHelper, useListTableState, useServerTable } from '@/shared/lib/table'
 import { DataTable } from '@/shared/ui/data-table'
 import { DataTablePagination } from '@/shared/ui/data-table-pagination'
 import { ErrorState } from '@/shared/ui/error-state'
@@ -21,6 +14,7 @@ import { ErrorState } from '@/shared/ui/error-state'
 import {
   VEHICLES_PAGE_SIZE,
   VehicleListSearchSchema,
+  isFiltered,
   type VehicleListSearch,
 } from '../model/vehicle-list-search'
 
@@ -65,6 +59,8 @@ const columns = column.columns([
 // A stable fallback: a new [] on every render would make the table rebuild its rows each time
 const NO_VEHICLES: Vehicle[] = []
 
+const parseSort = (sort: string | undefined) => VehicleListSearchSchema.shape.sort.parse(sort)
+
 interface VehiclesTableProps {
   search: VehicleListSearch
   onSearchChange: (patch: Partial<VehicleListSearch>) => void
@@ -72,29 +68,28 @@ interface VehiclesTableProps {
 
 export function VehiclesTable({ search, onSearchChange }: VehiclesTableProps) {
   const { data, error, isPending, isError, isPlaceholderData, refetch } = useQuery(
-    vehicleQueries.list({ page: search.page, pageSize: VEHICLES_PAGE_SIZE, sort: search.sort }),
+    vehicleQueries.list({
+      page: search.page,
+      pageSize: VEHICLES_PAGE_SIZE,
+      sort: search.sort,
+      search: search.search,
+      status: search.status,
+      type: search.type,
+    }),
   )
-
   // The URL owns page and order; the table only reports what the user asked for
-  const pagination = useMemo<PaginationState>(
-    () => ({ pageIndex: search.page - 1, pageSize: VEHICLES_PAGE_SIZE }),
-    [search.page],
-  )
-  const sorting = useMemo(() => sortingFromParam(search.sort), [search.sort])
-
+  const tableState = useListTableState({
+    page: search.page,
+    pageSize: VEHICLES_PAGE_SIZE,
+    sort: search.sort,
+    parseSort,
+    onChange: onSearchChange,
+  })
   const table = useServerTable({
     columns,
     data: data?.items ?? NO_VEHICLES,
     rowCount: data?.total,
-    state: { pagination, sorting },
-    onPaginationChange: (updater) => {
-      onSearchChange({ page: functionalUpdate(updater, pagination).pageIndex + 1 })
-    },
-    onSortingChange: (updater) => {
-      const sort = sortingToParam(functionalUpdate(updater, sorting))
-      // A new order starts again from the first page
-      onSearchChange({ sort: VehicleListSearchSchema.shape.sort.parse(sort), page: 1 })
-    },
+    ...tableState,
   })
 
   if (isError && !data) return <ErrorState error={error} onRetry={refetch} />
@@ -104,10 +99,15 @@ export function VehiclesTable({ search, onSearchChange }: VehiclesTableProps) {
       <DataTable
         isLoading={isPending}
         isStale={isPlaceholderData}
-        // Total above zero with no rows means the URL points past the last page
-        emptyMessage={data?.total ? 'There are no vehicles on this page.' : 'No vehicles yet.'}
+        emptyMessage={emptyMessage(search, data?.total ?? 0)}
       />
       {data !== undefined && data.total > 0 && <DataTablePagination />}
     </table.AppTable>
   )
+}
+
+function emptyMessage(search: VehicleListSearch, total: number) {
+  // Rows exist, just not here: the URL points past the last page
+  if (total > 0) return 'There are no vehicles on this page.'
+  return isFiltered(search) ? 'No vehicles match these filters.' : 'No vehicles yet.'
 }

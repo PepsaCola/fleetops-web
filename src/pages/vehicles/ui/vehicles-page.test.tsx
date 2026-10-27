@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { describe, expect, it } from 'vitest'
@@ -150,5 +150,59 @@ describe('VehiclesPage', () => {
     await user.click(screen.getByRole('button', { name: 'Odometer' }))
 
     expect(router.state.location.search).toBe('?sort=odometerKm')
+  })
+
+  it('filters by status and starts again from the first page', async () => {
+    const requests = serveFleet()
+    const user = userEvent.setup()
+
+    const { router } = renderWithProviders(<VehiclesPage />, { url: '/vehicles?page=2' })
+    expect(await screen.findByText('Page 2 of 2')).toBeInTheDocument()
+
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Status' }), 'In maintenance')
+
+    await waitFor(() =>
+      expect(requests.at(-1)).toBe('?page=1&pageSize=20&sort=plate&status=maintenance'),
+    )
+    expect(router.state.location.search).toBe('?status=maintenance')
+  })
+
+  it('searches once the user pauses typing, without a history entry per search', async () => {
+    const requests = serveFleet()
+    const user = userEvent.setup()
+
+    const { router } = renderWithProviders(<VehiclesPage />, { url: '/vehicles' })
+    await screen.findByText('Page 1 of 2')
+    await user.type(screen.getByRole('searchbox', { name: 'Search vehicles' }), 'volvo')
+
+    // One request for the first page and one for the finished word, none per keystroke
+    await waitFor(() => expect(requests).toHaveLength(2))
+    expect(requests[1]).toBe('?page=1&pageSize=20&sort=plate&search=volvo')
+    expect(router.state.location.search).toBe('?search=volvo')
+    expect(router.state.historyAction).toBe('REPLACE')
+  })
+
+  it('resets the filters but keeps the order', async () => {
+    serveFleet()
+    const user = userEvent.setup()
+
+    const { router } = renderWithProviders(<VehiclesPage />, {
+      url: '/vehicles?sort=-year&search=volvo&status=active',
+    })
+    expect(screen.getByRole('searchbox', { name: 'Search vehicles' })).toHaveValue('volvo')
+    await user.click(await screen.findByRole('button', { name: 'Reset' }))
+
+    expect(router.state.location.search).toBe('?sort=-year')
+    expect(screen.getByRole('searchbox', { name: 'Search vehicles' })).toHaveValue('')
+    expect(screen.getByRole('combobox', { name: 'Status' })).toHaveValue('')
+    expect(screen.queryByRole('button', { name: 'Reset' })).not.toBeInTheDocument()
+  })
+
+  it('says so when nothing matches the filters', async () => {
+    server.use(http.get('/api/v1/vehicles', () => HttpResponse.json(pageOf([]))))
+
+    renderWithProviders(<VehiclesPage />, { url: '/vehicles?type=car' })
+
+    expect(await screen.findByText('No vehicles match these filters.')).toBeInTheDocument()
   })
 })

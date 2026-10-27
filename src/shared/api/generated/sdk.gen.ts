@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { GetHealthData, GetHealthErrors, GetHealthResponses, GetReadyData, GetReadyErrors, GetReadyResponses, GetVehicleData, GetVehicleErrors, GetVehicleResponses, ListVehiclesData, ListVehiclesErrors, ListVehiclesResponses } from './types.gen';
+import type { GetDriverData, GetDriverErrors, GetDriverResponses, GetFleetPositionsData, GetFleetPositionsErrors, GetFleetPositionsResponses, GetHealthData, GetHealthErrors, GetHealthResponses, GetReadyData, GetReadyErrors, GetReadyResponses, GetVehicleData, GetVehicleErrors, GetVehicleResponses, ListDriversData, ListDriversErrors, ListDriversResponses, ListTrackingRoutesData, ListTrackingRoutesErrors, ListTrackingRoutesResponses, ListVehiclesData, ListVehiclesErrors, ListVehiclesResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -51,5 +51,43 @@ export const listVehicles = <ThrowOnError extends boolean = true>(options?: Opti
 export const getVehicle = <ThrowOnError extends boolean = true>(options: Options<GetVehicleData, ThrowOnError>): RequestResult<GetVehicleResponses, GetVehicleErrors, ThrowOnError, 'data'> => (options.client ?? client).get<GetVehicleResponses, GetVehicleErrors, ThrowOnError, 'data'>({
     responseStyle: 'data',
     url: '/api/v1/vehicles/{vehicleId}',
+    ...options
+});
+
+/**
+ * List drivers with filters, sorting and pagination
+ */
+export const listDrivers = <ThrowOnError extends boolean = true>(options?: Options<ListDriversData, ThrowOnError>): RequestResult<ListDriversResponses, ListDriversErrors, ThrowOnError, 'data'> => (options?.client ?? client).get<ListDriversResponses, ListDriversErrors, ThrowOnError, 'data'>({
+    responseStyle: 'data',
+    url: '/api/v1/drivers',
+    ...options
+});
+
+/**
+ * Get one driver
+ */
+export const getDriver = <ThrowOnError extends boolean = true>(options: Options<GetDriverData, ThrowOnError>): RequestResult<GetDriverResponses, GetDriverErrors, ThrowOnError, 'data'> => (options.client ?? client).get<GetDriverResponses, GetDriverErrors, ThrowOnError, 'data'>({
+    responseStyle: 'data',
+    url: '/api/v1/drivers/{driverId}',
+    ...options
+});
+
+/**
+ * Where every vehicle is right now
+ *
+ * Simulated from the clock: the demo fleet drives fixed routes on a timetable.
+ */
+export const getFleetPositions = <ThrowOnError extends boolean = true>(options?: Options<GetFleetPositionsData, ThrowOnError>): RequestResult<GetFleetPositionsResponses, GetFleetPositionsErrors, ThrowOnError, 'data'> => (options?.client ?? client).get<GetFleetPositionsResponses, GetFleetPositionsErrors, ThrowOnError, 'data'>({
+    responseStyle: 'data',
+    url: '/api/v1/tracking/positions',
+    ...options
+});
+
+/**
+ * The roads the fleet drives, for drawing on the map
+ */
+export const listTrackingRoutes = <ThrowOnError extends boolean = true>(options?: Options<ListTrackingRoutesData, ThrowOnError>): RequestResult<ListTrackingRoutesResponses, ListTrackingRoutesErrors, ThrowOnError, 'data'> => (options?.client ?? client).get<ListTrackingRoutesResponses, ListTrackingRoutesErrors, ThrowOnError, 'data'>({
+    responseStyle: 'data',
+    url: '/api/v1/tracking/routes',
     ...options
 });

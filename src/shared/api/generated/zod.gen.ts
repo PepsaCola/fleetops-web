@@ -2,6 +2,39 @@
 
 import * as z from 'zod';
 
+export const zDriver = z.object({
+    id: z.uuid().regex(/^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$/),
+    firstName: z.string(),
+    lastName: z.string(),
+    phone: z.string(),
+    licenseNumber: z.string(),
+    licenseCategories: z.array(z.string()),
+    licenseExpiresOn: z.iso.date().regex(/^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$/),
+    medicalExpiresOn: z.iso.date().regex(/^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$/),
+    documentsExpireOn: z.iso.date().regex(/^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$/),
+    documents: z.enum([
+        'valid',
+        'expiring',
+        'expired'
+    ]),
+    status: z.enum([
+        'active',
+        'on_leave',
+        'inactive'
+    ]),
+    homeDepot: z.object({
+        id: z.uuid().regex(/^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$/),
+        name: z.string()
+    })
+});
+
+export const zDriverPage = z.object({
+    items: z.array(zDriver),
+    total: z.int().gte(-9007199254740991).lte(9007199254740991),
+    page: z.int().gte(-9007199254740991).lte(9007199254740991),
+    pageSize: z.int().gte(-9007199254740991).lte(9007199254740991)
+});
+
 export const zHealth = z.object({
     status: z.literal('ok'),
     uptime: z.int().gte(-9007199254740991).lte(9007199254740991)
@@ -9,6 +42,44 @@ export const zHealth = z.object({
 
 export const zReady = z.object({
     status: z.literal('ready')
+});
+
+export const zVehiclePosition = z.object({
+    vehicleId: z.uuid().regex(/^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$/),
+    plate: z.string(),
+    type: z.enum([
+        'truck',
+        'van',
+        'car'
+    ]),
+    lng: z.number(),
+    lat: z.number(),
+    headingDeg: z.number().nullable(),
+    speedKmh: z.number(),
+    activity: z.enum([
+        'to_customer',
+        'at_customer',
+        'to_depot',
+        'at_depot',
+        'off_duty'
+    ]),
+    routeId: z.string().nullable()
+});
+
+export const zFleetPositions = z.object({
+    at: z.iso.datetime().regex(/^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$/),
+    vehicles: z.array(zVehiclePosition)
+});
+
+export const zTrackingRoute = z.object({
+    id: z.string(),
+    name: z.string(),
+    kind: z.enum(['local', 'regional']),
+    path: z.array(z.tuple([z.number(), z.number()]))
+});
+
+export const zTrackingRoutes = z.object({
+    routes: z.array(zTrackingRoute)
 });
 
 export const zVehicle = z.object({
@@ -104,3 +175,50 @@ export const zGetVehiclePath = z.object({
  * Default Response
  */
 export const zGetVehicleResponse = zVehicle;
+
+export const zListDriversQuery = z.object({
+    page: z.int().gte(1).lte(9007199254740991).optional().default(1),
+    pageSize: z.int().gte(1).lte(100).optional().default(20),
+    status: z.enum([
+        'active',
+        'on_leave',
+        'inactive'
+    ]).optional(),
+    depotId: z.uuid().regex(/^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$/).optional(),
+    documents: z.enum([
+        'valid',
+        'expiring',
+        'expired'
+    ]).optional(),
+    search: z.string().max(50).optional(),
+    sort: z.enum([
+        'lastName',
+        '-lastName',
+        'documentsExpireOn',
+        '-documentsExpireOn'
+    ]).optional().default('lastName')
+});
+
+/**
+ * Default Response
+ */
+export const zListDriversResponse = zDriverPage;
+
+export const zGetDriverPath = z.object({
+    driverId: z.uuid().regex(/^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$/)
+});
+
+/**
+ * Default Response
+ */
+export const zGetDriverResponse = zDriver;
+
+/**
+ * Default Response
+ */
+export const zGetFleetPositionsResponse = zFleetPositions;
+
+/**
+ * Default Response
+ */
+export const zListTrackingRoutesResponse = zTrackingRoutes;

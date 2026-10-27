@@ -4,6 +4,46 @@ export type ClientOptions = {
     baseUrl: `${string}://${string}` | (string & {});
 };
 
+export type Driver = {
+    id: string;
+    firstName: string;
+    lastName: string;
+    /**
+     * International format, e.g. "+380671234567"
+     */
+    phone: string;
+    licenseNumber: string;
+    /**
+     * Licence categories, e.g. ["B", "C", "CE"]
+     */
+    licenseCategories: Array<string>;
+    licenseExpiresOn: string;
+    medicalExpiresOn: string;
+    /**
+     * The earlier of the two expiry dates
+     */
+    documentsExpireOn: string;
+    /**
+     * "expiring": the first document runs out within 30 days
+     */
+    documents: 'valid' | 'expiring' | 'expired';
+    status: 'active' | 'on_leave' | 'inactive';
+    homeDepot: {
+        id: string;
+        name: string;
+    };
+};
+
+export type DriverPage = {
+    items: Array<Driver>;
+    /**
+     * Items matching the filters, across all pages
+     */
+    total: number;
+    page: number;
+    pageSize: number;
+};
+
 export type Health = {
     status: 'ok';
     /**
@@ -14,6 +54,49 @@ export type Health = {
 
 export type Ready = {
     status: 'ready';
+};
+
+export type VehiclePosition = {
+    vehicleId: string;
+    plate: string;
+    type: 'truck' | 'van' | 'car';
+    lng: number;
+    lat: number;
+    /**
+     * Direction of travel, degrees clockwise from north; null while standing
+     */
+    headingDeg: number | null;
+    speedKmh: number;
+    activity: 'to_customer' | 'at_customer' | 'to_depot' | 'at_depot' | 'off_duty';
+    /**
+     * The route the vehicle drives; null when off duty
+     */
+    routeId: string | null;
+};
+
+export type FleetPositions = {
+    /**
+     * The moment the positions are for
+     */
+    at: string;
+    vehicles: Array<VehiclePosition>;
+};
+
+export type TrackingRoute = {
+    id: string;
+    name: string;
+    kind: 'local' | 'regional';
+    /**
+     * [lng, lat] from depot to customer
+     */
+    path: Array<[
+        number,
+        number
+    ]>;
+};
+
+export type TrackingRoutes = {
+    routes: Array<TrackingRoute>;
 };
 
 export type Vehicle = {
@@ -204,3 +287,138 @@ export type GetVehicleResponses = {
 };
 
 export type GetVehicleResponse = GetVehicleResponses[keyof GetVehicleResponses];
+
+export type ListDriversData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * 1-based page number
+         */
+        page?: number;
+        pageSize?: number;
+        status?: 'active' | 'on_leave' | 'inactive';
+        depotId?: string;
+        /**
+         * "expiring": the first document runs out within 30 days
+         */
+        documents?: 'valid' | 'expiring' | 'expired';
+        /**
+         * Part of the name, phone or licence number
+         */
+        search?: string;
+        sort?: 'lastName' | '-lastName' | 'documentsExpireOn' | '-documentsExpireOn';
+    };
+    url: '/api/v1/drivers';
+};
+
+export type ListDriversErrors = {
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '4XX': ProblemDetails;
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '5XX': ProblemDetails;
+};
+
+export type ListDriversError = ListDriversErrors[keyof ListDriversErrors];
+
+export type ListDriversResponses = {
+    /**
+     * Default Response
+     */
+    200: DriverPage;
+};
+
+export type ListDriversResponse = ListDriversResponses[keyof ListDriversResponses];
+
+export type GetDriverData = {
+    body?: never;
+    path: {
+        driverId: string;
+    };
+    query?: never;
+    url: '/api/v1/drivers/{driverId}';
+};
+
+export type GetDriverErrors = {
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '4XX': ProblemDetails;
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '5XX': ProblemDetails;
+};
+
+export type GetDriverError = GetDriverErrors[keyof GetDriverErrors];
+
+export type GetDriverResponses = {
+    /**
+     * Default Response
+     */
+    200: Driver;
+};
+
+export type GetDriverResponse = GetDriverResponses[keyof GetDriverResponses];
+
+export type GetFleetPositionsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/tracking/positions';
+};
+
+export type GetFleetPositionsErrors = {
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '4XX': ProblemDetails;
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '5XX': ProblemDetails;
+};
+
+export type GetFleetPositionsError = GetFleetPositionsErrors[keyof GetFleetPositionsErrors];
+
+export type GetFleetPositionsResponses = {
+    /**
+     * Default Response
+     */
+    200: FleetPositions;
+};
+
+export type GetFleetPositionsResponse = GetFleetPositionsResponses[keyof GetFleetPositionsResponses];
+
+export type ListTrackingRoutesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/tracking/routes';
+};
+
+export type ListTrackingRoutesErrors = {
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '4XX': ProblemDetails;
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '5XX': ProblemDetails;
+};
+
+export type ListTrackingRoutesError = ListTrackingRoutesErrors[keyof ListTrackingRoutesErrors];
+
+export type ListTrackingRoutesResponses = {
+    /**
+     * Default Response
+     */
+    200: TrackingRoutes;
+};
+
+export type ListTrackingRoutesResponse = ListTrackingRoutesResponses[keyof ListTrackingRoutesResponses];

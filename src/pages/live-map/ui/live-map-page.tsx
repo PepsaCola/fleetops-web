@@ -1,17 +1,14 @@
-import { MapIcon } from 'lucide-react'
-
 import { PageHeader } from '@/shared/ui/page-header'
-import { PagePlaceholder } from '@/shared/ui/page-placeholder'
+import { FleetMap } from '@/widgets/fleet-map'
 
 export function LiveMapPage() {
   return (
     <>
-      <PageHeader title="Live map" description="Every vehicle in real time." />
-      <PagePlaceholder
-        icon={MapIcon}
-        title="Live map is on the way"
-        description="Vehicles moving in real time, status filters, trip routes and track replay."
+      <PageHeader
+        title="Live map"
+        description="Where every vehicle is right now. The demo fleet is simulated: it drives real roads on a timetable."
       />
+      <FleetMap className="min-h-[420px] flex-1" />
     </>
   )
 }

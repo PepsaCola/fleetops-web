@@ -1,17 +1,20 @@
-import { UsersIcon } from 'lucide-react'
-
+import { useSearchState } from '@/shared/lib/use-search-state'
 import { PageHeader } from '@/shared/ui/page-header'
-import { PagePlaceholder } from '@/shared/ui/page-placeholder'
+
+import { DriverListSearchSchema } from '../model/driver-list-search'
+import { DriversTable } from './drivers-table'
+import { DriversToolbar } from './drivers-toolbar'
 
 export function DriversPage() {
+  const [search, setSearch] = useSearchState(DriverListSearchSchema)
+
   return (
     <>
-      <PageHeader title="Drivers" description="Shifts, driving hours and safety." />
-      <PagePlaceholder
-        icon={UsersIcon}
-        title="Driver list is on the way"
-        description="Shifts and driving hours, licence expiry dates and a safety score."
-      />
+      <PageHeader title="Drivers" description="Your drivers and the state of their documents." />
+      <div className="flex flex-col gap-4">
+        <DriversToolbar search={search} onSearchChange={setSearch} />
+        <DriversTable search={search} onSearchChange={setSearch} />
+      </div>
     </>
   )
 }
