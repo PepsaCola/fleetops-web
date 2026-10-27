@@ -4,10 +4,11 @@ import { cn } from '@/shared/lib/utils'
 
 import { Badge } from './badge'
 
-export type StatusTone = 'success' | 'warning' | 'danger' | 'neutral'
+export type StatusTone = 'success' | 'info' | 'warning' | 'danger' | 'neutral'
 
 const DOT_COLORS: Record<StatusTone, string> = {
   success: 'bg-emerald-500',
+  info: 'bg-blue-600',
   warning: 'bg-amber-500',
   danger: 'bg-destructive',
   neutral: 'bg-muted-foreground/50',

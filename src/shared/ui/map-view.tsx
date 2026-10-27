@@ -2,7 +2,13 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 
 import { setWorkerUrl } from 'maplibre-gl'
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
-import { Map as MapLibreMap, NavigationControl, type MapProps } from 'react-map-gl/maplibre'
+import type { Ref } from 'react'
+import {
+  Map as MapLibreMap,
+  NavigationControl,
+  type MapProps,
+  type MapRef,
+} from 'react-map-gl/maplibre'
 
 import { useResolvedTheme } from '@/shared/lib/theme'
 
@@ -16,8 +22,11 @@ const MAP_STYLES = {
   dark: 'https://tiles.openfreemap.org/styles/dark',
 } as const
 
+// In React 19 `ref` is an ordinary prop, so it reaches the map along with the rest
+type MapViewProps = Omit<MapProps, 'mapStyle'> & { ref?: Ref<MapRef> }
+
 /** A MapLibre map whose base style follows the app's light or dark theme. */
-export function MapView({ children, ...props }: Omit<MapProps, 'mapStyle'>) {
+export function MapView({ children, ...props }: MapViewProps) {
   const theme = useResolvedTheme()
 
   return (

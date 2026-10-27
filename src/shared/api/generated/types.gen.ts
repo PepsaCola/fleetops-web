@@ -99,6 +99,56 @@ export type TrackingRoutes = {
     routes: Array<TrackingRoute>;
 };
 
+export type Trip = {
+    id: string;
+    /**
+     * Short trip number to read out, e.g. 1042
+     */
+    number: number;
+    /**
+     * Follows the clock: planned, then in_progress, then completed; or cancelled
+     */
+    status: 'planned' | 'in_progress' | 'completed' | 'cancelled';
+    vehicle: {
+        id: string;
+        plate: string;
+        type: 'truck' | 'van' | 'car';
+    };
+    driver: {
+        id: string;
+        firstName: string;
+        lastName: string;
+    };
+    route: {
+        id: string;
+        name: string;
+        kind: 'local' | 'regional';
+    };
+    /**
+     * Leaves the depot
+     */
+    departsAt: string;
+    /**
+     * Reaches the customer
+     */
+    arrivesAt: string;
+    /**
+     * Back at the depot
+     */
+    returnsAt: string;
+    cancelledAt: string | null;
+};
+
+export type TripPage = {
+    items: Array<Trip>;
+    /**
+     * Items matching the filters, across all pages
+     */
+    total: number;
+    page: number;
+    pageSize: number;
+};
+
 export type Vehicle = {
     id: string;
     /**
@@ -364,6 +414,83 @@ export type GetDriverResponses = {
 };
 
 export type GetDriverResponse = GetDriverResponses[keyof GetDriverResponses];
+
+export type ListTripsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * 1-based page number
+         */
+        page?: number;
+        pageSize?: number;
+        /**
+         * Trips leaving on this day, Kyiv time; today by default
+         */
+        day?: string;
+        /**
+         * Follows the clock: planned, then in_progress, then completed; or cancelled
+         */
+        status?: 'planned' | 'in_progress' | 'completed' | 'cancelled';
+        vehicleId?: string;
+        driverId?: string;
+        sort?: 'departsAt' | '-departsAt' | 'number' | '-number';
+    };
+    url: '/api/v1/trips';
+};
+
+export type ListTripsErrors = {
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '4XX': ProblemDetails;
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '5XX': ProblemDetails;
+};
+
+export type ListTripsError = ListTripsErrors[keyof ListTripsErrors];
+
+export type ListTripsResponses = {
+    /**
+     * Default Response
+     */
+    200: TripPage;
+};
+
+export type ListTripsResponse = ListTripsResponses[keyof ListTripsResponses];
+
+export type GetTripData = {
+    body?: never;
+    path: {
+        tripId: string;
+    };
+    query?: never;
+    url: '/api/v1/trips/{tripId}';
+};
+
+export type GetTripErrors = {
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '4XX': ProblemDetails;
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '5XX': ProblemDetails;
+};
+
+export type GetTripError = GetTripErrors[keyof GetTripErrors];
+
+export type GetTripResponses = {
+    /**
+     * Default Response
+     */
+    200: Trip;
+};
+
+export type GetTripResponse = GetTripResponses[keyof GetTripResponses];
 
 export type GetFleetPositionsData = {
     body?: never;

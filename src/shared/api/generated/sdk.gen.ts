@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { GetDriverData, GetDriverErrors, GetDriverResponses, GetFleetPositionsData, GetFleetPositionsErrors, GetFleetPositionsResponses, GetHealthData, GetHealthErrors, GetHealthResponses, GetReadyData, GetReadyErrors, GetReadyResponses, GetVehicleData, GetVehicleErrors, GetVehicleResponses, ListDriversData, ListDriversErrors, ListDriversResponses, ListTrackingRoutesData, ListTrackingRoutesErrors, ListTrackingRoutesResponses, ListVehiclesData, ListVehiclesErrors, ListVehiclesResponses } from './types.gen';
+import type { GetDriverData, GetDriverErrors, GetDriverResponses, GetFleetPositionsData, GetFleetPositionsErrors, GetFleetPositionsResponses, GetHealthData, GetHealthErrors, GetHealthResponses, GetReadyData, GetReadyErrors, GetReadyResponses, GetTripData, GetTripErrors, GetTripResponses, GetVehicleData, GetVehicleErrors, GetVehicleResponses, ListDriversData, ListDriversErrors, ListDriversResponses, ListTrackingRoutesData, ListTrackingRoutesErrors, ListTrackingRoutesResponses, ListTripsData, ListTripsErrors, ListTripsResponses, ListVehiclesData, ListVehiclesErrors, ListVehiclesResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -69,6 +69,24 @@ export const listDrivers = <ThrowOnError extends boolean = true>(options?: Optio
 export const getDriver = <ThrowOnError extends boolean = true>(options: Options<GetDriverData, ThrowOnError>): RequestResult<GetDriverResponses, GetDriverErrors, ThrowOnError, 'data'> => (options.client ?? client).get<GetDriverResponses, GetDriverErrors, ThrowOnError, 'data'>({
     responseStyle: 'data',
     url: '/api/v1/drivers/{driverId}',
+    ...options
+});
+
+/**
+ * List the trips of a day with filters, sorting and pagination
+ */
+export const listTrips = <ThrowOnError extends boolean = true>(options?: Options<ListTripsData, ThrowOnError>): RequestResult<ListTripsResponses, ListTripsErrors, ThrowOnError, 'data'> => (options?.client ?? client).get<ListTripsResponses, ListTripsErrors, ThrowOnError, 'data'>({
+    responseStyle: 'data',
+    url: '/api/v1/trips',
+    ...options
+});
+
+/**
+ * Get one trip
+ */
+export const getTrip = <ThrowOnError extends boolean = true>(options: Options<GetTripData, ThrowOnError>): RequestResult<GetTripResponses, GetTripErrors, ThrowOnError, 'data'> => (options.client ?? client).get<GetTripResponses, GetTripErrors, ThrowOnError, 'data'>({
+    responseStyle: 'data',
+    url: '/api/v1/trips/{tripId}',
     ...options
 });
 
