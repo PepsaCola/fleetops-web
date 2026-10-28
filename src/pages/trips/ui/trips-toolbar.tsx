@@ -1,10 +1,10 @@
-import { ChevronLeftIcon, ChevronRightIcon, XIcon } from 'lucide-react'
+import { XIcon } from 'lucide-react'
 import type { NavigateOptions } from 'react-router'
 
 import { TRIP_STATUS_LABELS } from '@/entities/trip'
-import { addDays, fleetDate } from '@/shared/lib/fleet-time'
+import { fleetDate } from '@/shared/lib/fleet-time'
 import { Button } from '@/shared/ui/button'
-import { Input } from '@/shared/ui/input'
+import { DayPicker } from '@/shared/ui/day-picker'
 import { NativeSelect, NativeSelectOption } from '@/shared/ui/native-select'
 
 import {
@@ -25,44 +25,15 @@ interface TripsToolbarProps {
 /** The day and the status filter above the trip table; every change starts again from the first page. */
 export function TripsToolbar({ search, onSearchChange }: TripsToolbarProps) {
   const today = fleetDate()
-  const day = search.day ?? today
-  // Today is what the page shows without a day, so it stays out of the URL
-  const showDay = (next: string) =>
-    onSearchChange({ day: next === today ? undefined : next, page: 1 })
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <div className="flex items-center gap-1">
-        <Button
-          variant="outline"
-          size="icon"
-          aria-label="Previous day"
-          onClick={() => showDay(addDays(day, -1))}
-        >
-          <ChevronLeftIcon />
-        </Button>
-        <Input
-          type="date"
-          aria-label="Day"
-          required
-          className="w-40"
-          value={day}
-          onChange={(event) => showDay(fields.day.parse(event.target.value) ?? today)}
-        />
-        <Button
-          variant="outline"
-          size="icon"
-          aria-label="Next day"
-          onClick={() => showDay(addDays(day, 1))}
-        >
-          <ChevronRightIcon />
-        </Button>
-      </div>
-      {day !== today && (
-        <Button variant="ghost" onClick={() => showDay(today)}>
-          Today
-        </Button>
-      )}
+      <DayPicker
+        day={search.day ?? today}
+        today={today}
+        // Today is what the page shows without a day, so it stays out of the URL
+        onDayChange={(day) => onSearchChange({ day: day === today ? undefined : day, page: 1 })}
+      />
       <NativeSelect
         aria-label="Status"
         value={search.status ?? ''}

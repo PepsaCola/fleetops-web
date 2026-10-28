@@ -1,10 +1,19 @@
-import { Outlet } from 'react-router'
+import { useQuery } from '@tanstack/react-query'
+import { Navigate, Outlet, useLocation } from 'react-router'
 
+import { sessionQueries } from '@/entities/session'
+import { loginPath } from '@/shared/routes'
 import { SidebarInset, SidebarProvider } from '@/shared/ui/sidebar'
 import { AppHeader } from '@/widgets/app-header'
 import { AppSidebar } from '@/widgets/app-sidebar'
 
 export function AppShell() {
+  const { data: user } = useQuery(sessionQueries.me())
+  const location = useLocation()
+
+  // The session ended while here (it expired, or the user signed out): sign in, then come back
+  if (user === null) return <Navigate to={loginPath(location.pathname + location.search)} replace />
+
   return (
     <SidebarProvider>
       <AppSidebar />

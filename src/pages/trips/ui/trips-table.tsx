@@ -1,9 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
+import { Link } from 'react-router'
 
 import { driverName } from '@/entities/driver'
 import { ROUTE_KIND_LABELS, TripStatusBadge, tripQueries, type Trip } from '@/entities/trip'
 import { fleetDate, fleetTime } from '@/shared/lib/fleet-time'
 import { createServerColumnHelper, useListTableState, useServerTable } from '@/shared/lib/table'
+import { driverPath, vehiclePath } from '@/shared/routes'
 import { DataTable } from '@/shared/ui/data-table'
 import { DataTablePagination } from '@/shared/ui/data-table-pagination'
 import { ErrorState } from '@/shared/ui/error-state'
@@ -40,13 +42,24 @@ const columns = column.columns([
       </div>
     ),
   }),
-  column.accessor('vehicle.plate', {
+  column.accessor('vehicle', {
     header: 'Vehicle',
-    cell: (info) => <span className="font-mono">{info.getValue()}</span>,
+    cell: (info) => (
+      <Link
+        to={vehiclePath(info.getValue().id)}
+        className="font-mono underline-offset-4 hover:underline"
+      >
+        {info.getValue().plate}
+      </Link>
+    ),
   }),
   column.accessor('driver', {
     header: 'Driver',
-    cell: (info) => driverName(info.getValue()),
+    cell: (info) => (
+      <Link to={driverPath(info.getValue().id)} className="underline-offset-4 hover:underline">
+        {driverName(info.getValue())}
+      </Link>
+    ),
   }),
   column.accessor('arrivesAt', {
     header: 'At customer',

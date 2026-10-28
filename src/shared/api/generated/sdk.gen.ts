@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { GetDriverData, GetDriverErrors, GetDriverResponses, GetFleetPositionsData, GetFleetPositionsErrors, GetFleetPositionsResponses, GetHealthData, GetHealthErrors, GetHealthResponses, GetReadyData, GetReadyErrors, GetReadyResponses, GetTripData, GetTripErrors, GetTripResponses, GetVehicleData, GetVehicleErrors, GetVehicleResponses, ListDriversData, ListDriversErrors, ListDriversResponses, ListTrackingRoutesData, ListTrackingRoutesErrors, ListTrackingRoutesResponses, ListTripsData, ListTripsErrors, ListTripsResponses, ListVehiclesData, ListVehiclesErrors, ListVehiclesResponses } from './types.gen';
+import type { CancelTripData, CancelTripErrors, CancelTripResponses, CancelWorkOrderData, CancelWorkOrderErrors, CancelWorkOrderResponses, CreateTripData, CreateTripErrors, CreateTripResponses, CreateWorkOrderData, CreateWorkOrderErrors, CreateWorkOrderResponses, GetCostReportData, GetCostReportErrors, GetCostReportResponses, GetCurrentUserData, GetCurrentUserErrors, GetCurrentUserResponses, GetDriverData, GetDriverErrors, GetDriverResponses, GetFleetPositionsData, GetFleetPositionsErrors, GetFleetPositionsResponses, GetHealthData, GetHealthErrors, GetHealthResponses, GetReadyData, GetReadyErrors, GetReadyResponses, GetTripData, GetTripErrors, GetTripResponses, GetVehicleData, GetVehicleErrors, GetVehicleResponses, GetWorkOrderData, GetWorkOrderErrors, GetWorkOrderResponses, ListDriversData, ListDriversErrors, ListDriversResponses, ListTrackingRoutesData, ListTrackingRoutesErrors, ListTrackingRoutesResponses, ListTripsData, ListTripsErrors, ListTripsResponses, ListVehiclesData, ListVehiclesErrors, ListVehiclesResponses, ListWorkOrdersData, ListWorkOrdersErrors, ListWorkOrdersResponses, LoginData, LoginErrors, LoginResponses, LogoutData, LogoutErrors, LogoutResponses, UpdateTripData, UpdateTripErrors, UpdateTripResponses, UpdateWorkOrderData, UpdateWorkOrderErrors, UpdateWorkOrderResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -33,6 +33,37 @@ export const getHealth = <ThrowOnError extends boolean = true>(options?: Options
 export const getReady = <ThrowOnError extends boolean = true>(options?: Options<GetReadyData, ThrowOnError>): RequestResult<GetReadyResponses, GetReadyErrors, ThrowOnError, 'data'> => (options?.client ?? client).get<GetReadyResponses, GetReadyErrors, ThrowOnError, 'data'>({
     responseStyle: 'data',
     url: '/ready',
+    ...options
+});
+
+/**
+ * Sign in; the session is kept in an httpOnly cookie
+ */
+export const login = <ThrowOnError extends boolean = true>(options: Options<LoginData, ThrowOnError>): RequestResult<LoginResponses, LoginErrors, ThrowOnError, 'data'> => (options.client ?? client).post<LoginResponses, LoginErrors, ThrowOnError, 'data'>({
+    responseStyle: 'data',
+    url: '/api/v1/auth/login',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Sign out of this browser
+ */
+export const logout = <ThrowOnError extends boolean = true>(options?: Options<LogoutData, ThrowOnError>): RequestResult<LogoutResponses, LogoutErrors, ThrowOnError, 'data'> => (options?.client ?? client).post<LogoutResponses, LogoutErrors, ThrowOnError, 'data'>({
+    responseStyle: 'data',
+    url: '/api/v1/auth/logout',
+    ...options
+});
+
+/**
+ * Who is signed in; 401 when nobody is
+ */
+export const getCurrentUser = <ThrowOnError extends boolean = true>(options?: Options<GetCurrentUserData, ThrowOnError>): RequestResult<GetCurrentUserResponses, GetCurrentUserErrors, ThrowOnError, 'data'> => (options?.client ?? client).get<GetCurrentUserResponses, GetCurrentUserErrors, ThrowOnError, 'data'>({
+    responseStyle: 'data',
+    url: '/api/v1/auth/me',
     ...options
 });
 
@@ -82,6 +113,19 @@ export const listTrips = <ThrowOnError extends boolean = true>(options?: Options
 });
 
 /**
+ * Book a trip; 409 when the vehicle or the driver is busy then
+ */
+export const createTrip = <ThrowOnError extends boolean = true>(options: Options<CreateTripData, ThrowOnError>): RequestResult<CreateTripResponses, CreateTripErrors, ThrowOnError, 'data'> => (options.client ?? client).post<CreateTripResponses, CreateTripErrors, ThrowOnError, 'data'>({
+    responseStyle: 'data',
+    url: '/api/v1/trips',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * Get one trip
  */
 export const getTrip = <ThrowOnError extends boolean = true>(options: Options<GetTripData, ThrowOnError>): RequestResult<GetTripResponses, GetTripErrors, ThrowOnError, 'data'> => (options.client ?? client).get<GetTripResponses, GetTripErrors, ThrowOnError, 'data'>({
@@ -91,9 +135,93 @@ export const getTrip = <ThrowOnError extends boolean = true>(options: Options<Ge
 });
 
 /**
+ * Move a planned trip to another time, vehicle, driver or route
+ */
+export const updateTrip = <ThrowOnError extends boolean = true>(options: Options<UpdateTripData, ThrowOnError>): RequestResult<UpdateTripResponses, UpdateTripErrors, ThrowOnError, 'data'> => (options.client ?? client).patch<UpdateTripResponses, UpdateTripErrors, ThrowOnError, 'data'>({
+    responseStyle: 'data',
+    url: '/api/v1/trips/{tripId}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Cancel a planned trip; it stays on record and frees the vehicle and the driver
+ */
+export const cancelTrip = <ThrowOnError extends boolean = true>(options: Options<CancelTripData, ThrowOnError>): RequestResult<CancelTripResponses, CancelTripErrors, ThrowOnError, 'data'> => (options.client ?? client).post<CancelTripResponses, CancelTripErrors, ThrowOnError, 'data'>({
+    responseStyle: 'data',
+    url: '/api/v1/trips/{tripId}/cancel',
+    ...options
+});
+
+/**
+ * Work orders touching a range of days
+ */
+export const listWorkOrders = <ThrowOnError extends boolean = true>(options: Options<ListWorkOrdersData, ThrowOnError>): RequestResult<ListWorkOrdersResponses, ListWorkOrdersErrors, ThrowOnError, 'data'> => (options.client ?? client).get<ListWorkOrdersResponses, ListWorkOrdersErrors, ThrowOnError, 'data'>({
+    responseStyle: 'data',
+    url: '/api/v1/work-orders',
+    ...options
+});
+
+/**
+ * Book a vehicle into the workshop; 409 when it is on a trip or booked in then
+ */
+export const createWorkOrder = <ThrowOnError extends boolean = true>(options: Options<CreateWorkOrderData, ThrowOnError>): RequestResult<CreateWorkOrderResponses, CreateWorkOrderErrors, ThrowOnError, 'data'> => (options.client ?? client).post<CreateWorkOrderResponses, CreateWorkOrderErrors, ThrowOnError, 'data'>({
+    responseStyle: 'data',
+    url: '/api/v1/work-orders',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get one work order
+ */
+export const getWorkOrder = <ThrowOnError extends boolean = true>(options: Options<GetWorkOrderData, ThrowOnError>): RequestResult<GetWorkOrderResponses, GetWorkOrderErrors, ThrowOnError, 'data'> => (options.client ?? client).get<GetWorkOrderResponses, GetWorkOrderErrors, ThrowOnError, 'data'>({
+    responseStyle: 'data',
+    url: '/api/v1/work-orders/{workOrderId}',
+    ...options
+});
+
+/**
+ * Change a scheduled work order
+ */
+export const updateWorkOrder = <ThrowOnError extends boolean = true>(options: Options<UpdateWorkOrderData, ThrowOnError>): RequestResult<UpdateWorkOrderResponses, UpdateWorkOrderErrors, ThrowOnError, 'data'> => (options.client ?? client).patch<UpdateWorkOrderResponses, UpdateWorkOrderErrors, ThrowOnError, 'data'>({
+    responseStyle: 'data',
+    url: '/api/v1/work-orders/{workOrderId}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Cancel a scheduled work order; it stays on record and frees the vehicle
+ */
+export const cancelWorkOrder = <ThrowOnError extends boolean = true>(options: Options<CancelWorkOrderData, ThrowOnError>): RequestResult<CancelWorkOrderResponses, CancelWorkOrderErrors, ThrowOnError, 'data'> => (options.client ?? client).post<CancelWorkOrderResponses, CancelWorkOrderErrors, ThrowOnError, 'data'>({
+    responseStyle: 'data',
+    url: '/api/v1/work-orders/{workOrderId}/cancel',
+    ...options
+});
+
+/**
+ * What the fleet spent on fuel and in the workshop, by day and by vehicle
+ */
+export const getCostReport = <ThrowOnError extends boolean = true>(options: Options<GetCostReportData, ThrowOnError>): RequestResult<GetCostReportResponses, GetCostReportErrors, ThrowOnError, 'data'> => (options.client ?? client).get<GetCostReportResponses, GetCostReportErrors, ThrowOnError, 'data'>({
+    responseStyle: 'data',
+    url: '/api/v1/costs',
+    ...options
+});
+
+/**
  * Where every vehicle is right now
  *
- * Simulated from the clock: the demo fleet drives fixed routes on a timetable.
+ * Worked out from the trips and the clock: the demo fleet has no trackers.
  */
 export const getFleetPositions = <ThrowOnError extends boolean = true>(options?: Options<GetFleetPositionsData, ThrowOnError>): RequestResult<GetFleetPositionsResponses, GetFleetPositionsErrors, ThrowOnError, 'data'> => (options?.client ?? client).get<GetFleetPositionsResponses, GetFleetPositionsErrors, ThrowOnError, 'data'>({
     responseStyle: 'data',
@@ -102,7 +230,7 @@ export const getFleetPositions = <ThrowOnError extends boolean = true>(options?:
 });
 
 /**
- * The roads the fleet drives, for drawing on the map
+ * The roads the fleet drives, with how long a trip on each takes
  */
 export const listTrackingRoutes = <ThrowOnError extends boolean = true>(options?: Options<ListTrackingRoutesData, ThrowOnError>): RequestResult<ListTrackingRoutesResponses, ListTrackingRoutesErrors, ThrowOnError, 'data'> => (options?.client ?? client).get<ListTrackingRoutesResponses, ListTrackingRoutesErrors, ThrowOnError, 'data'>({
     responseStyle: 'data',

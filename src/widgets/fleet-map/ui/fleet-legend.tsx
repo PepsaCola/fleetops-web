@@ -9,7 +9,7 @@ import {
 
 import { MOTION_COLORS } from '../config/map-layers'
 
-const MOTIONS: Motion[] = ['moving', 'standing', 'off_duty']
+const MOTIONS: Motion[] = ['moving', 'standing', 'workshop', 'off_duty']
 
 interface FleetLegendProps {
   vehicles: VehiclePosition[]
@@ -17,7 +17,7 @@ interface FleetLegendProps {
   updatedAt: string | undefined
 }
 
-/** How many vehicles are moving, standing or off duty, and how fresh the positions are. */
+/** How many vehicles are moving, standing, in the workshop or off duty, and how fresh the positions are. */
 export function FleetLegend({ vehicles, updatedAt }: FleetLegendProps) {
   const counts = countByMotion(vehicles)
 

@@ -1,12 +1,31 @@
-import { createBrowserRouter } from 'react-router'
+import { createBrowserRouter, redirect, type LoaderFunctionArgs } from 'react-router'
 
-import { paths, type RouteHandle } from '@/shared/routes'
+import { sessionQueries } from '@/entities/session'
+import { afterLoginPath, loginPath, paths, type RouteHandle } from '@/shared/routes'
 
+import { queryClient } from '../entrypoint/query-client'
 import { AppShell } from '../layouts/app-shell'
 import { HydrateFallback } from './hydrate-fallback'
 import { RouteErrorBoundary } from './route-error-boundary'
 
 const handle = (title: string): RouteHandle => ({ title })
+
+/** Pages need a signed-in user; without one the login page comes first and leads back here */
+async function requireSession({ request }: LoaderFunctionArgs) {
+  const user = await queryClient.ensureQueryData(sessionQueries.me())
+  if (!user) {
+    const { pathname, search } = new URL(request.url)
+    throw redirect(loginPath(pathname + search))
+  }
+  return null
+}
+
+/** Someone already signed in has nothing to do on the login page */
+async function skipLoginWhenSignedIn({ request }: LoaderFunctionArgs) {
+  const user = await queryClient.ensureQueryData(sessionQueries.me())
+  if (user) throw redirect(afterLoginPath(new URL(request.url).searchParams.get('next')))
+  return null
+}
 
 // Every page is a lazy chunk: the bundle for a module loads only when it is opened
 export const router = createBrowserRouter([
@@ -17,10 +36,12 @@ export const router = createBrowserRouter([
     children: [
       {
         path: paths.login,
+        loader: skipLoginWhenSignedIn,
         lazy: () => import('@/pages/login').then((m) => ({ Component: m.LoginPage })),
       },
       {
         path: paths.dashboard,
+        loader: requireSession,
         Component: AppShell,
         children: [
           {
@@ -54,6 +75,11 @@ export const router = createBrowserRouter([
                 lazy: () => import('@/pages/vehicles').then((m) => ({ Component: m.VehiclesPage })),
               },
               {
+                path: paths.vehicle,
+                handle: handle('Vehicle'),
+                lazy: () => import('@/pages/vehicle').then((m) => ({ Component: m.VehiclePage })),
+              },
+              {
                 path: paths.maintenance,
                 handle: handle('Maintenance'),
                 lazy: () =>
@@ -63,6 +89,11 @@ export const router = createBrowserRouter([
                 path: paths.drivers,
                 handle: handle('Drivers'),
                 lazy: () => import('@/pages/drivers').then((m) => ({ Component: m.DriversPage })),
+              },
+              {
+                path: paths.driver,
+                handle: handle('Driver'),
+                lazy: () => import('@/pages/driver').then((m) => ({ Component: m.DriverPage })),
               },
               {
                 path: paths.costs,

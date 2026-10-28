@@ -19,6 +19,7 @@ import {
 } from '@/shared/ui/sidebar'
 
 import { NAV_GROUPS, SETTINGS_NAV_ITEM, type NavItemConfig } from '../config/navigation'
+import { UserMenu } from './user-menu'
 
 function NavItem({ item }: { item: NavItemConfig }) {
   const isActive = useMatch({ path: item.to, end: item.end ?? false }) !== null
@@ -81,6 +82,7 @@ export function AppSidebar() {
       <SidebarFooter>
         <SidebarMenu>
           <NavItem item={SETTINGS_NAV_ITEM} />
+          <UserMenu />
         </SidebarMenu>
       </SidebarFooter>
       <SidebarRail />

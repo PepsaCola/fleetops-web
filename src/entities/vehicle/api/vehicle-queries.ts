@@ -1,6 +1,6 @@
 import { keepPreviousData, queryOptions } from '@tanstack/react-query'
 
-import { listVehicles, type ListVehiclesData } from '@/shared/api'
+import { getVehicle, listVehicles, type ListVehiclesData } from '@/shared/api'
 
 export type VehicleListQuery = NonNullable<ListVehiclesData['query']>
 
@@ -14,5 +14,10 @@ export const vehicleQueries = {
       queryFn: ({ signal }) => listVehicles({ query, signal }),
       // Keep the current page on screen while the next one loads
       placeholderData: keepPreviousData,
+    }),
+  detail: (vehicleId: string) =>
+    queryOptions({
+      queryKey: [...vehicleQueries.all(), 'detail', vehicleId] as const,
+      queryFn: ({ signal }) => getVehicle({ path: { vehicleId }, signal }),
     }),
 }

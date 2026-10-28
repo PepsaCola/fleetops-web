@@ -4,6 +4,120 @@ export type ClientOptions = {
     baseUrl: `${string}://${string}` | (string & {});
 };
 
+export type CurrentUser = {
+    id: string;
+    email: string;
+    name: string;
+    /**
+     * Dispatchers change trips; viewers only look
+     */
+    role: 'dispatcher' | 'viewer';
+};
+
+export type CostReport = {
+    from: string;
+    to: string;
+    /**
+     * The fuel price the report counts with
+     */
+    dieselUahPerLitre: number;
+    totals: {
+        km: number;
+        /**
+         * Whole hryvnias
+         */
+        fuelUah: number;
+        /**
+         * Whole hryvnias
+         */
+        maintenanceUah: number;
+    };
+    /**
+     * Every day of the period, in order
+     */
+    days: Array<{
+        day: string;
+        /**
+         * Whole hryvnias
+         */
+        fuelUah: number;
+        /**
+         * Whole hryvnias
+         */
+        maintenanceUah: number;
+    }>;
+    /**
+     * The vehicles that cost anything, the dearest first
+     */
+    vehicles: Array<{
+        vehicle: {
+            id: string;
+            plate: string;
+            type: 'truck' | 'van' | 'car';
+        };
+        km: number;
+        /**
+         * Whole hryvnias
+         */
+        fuelUah: number;
+        /**
+         * Whole hryvnias
+         */
+        maintenanceUah: number;
+    }>;
+};
+
+export type VehiclePosition = {
+    vehicleId: string;
+    plate: string;
+    type: 'truck' | 'van' | 'car';
+    lng: number;
+    lat: number;
+    /**
+     * Direction of travel, degrees clockwise from north; null while standing
+     */
+    headingDeg: number | null;
+    speedKmh: number;
+    activity: 'to_customer' | 'at_customer' | 'to_depot' | 'at_depot' | 'in_workshop' | 'off_duty';
+    /**
+     * The route the vehicle drives; null when off duty
+     */
+    routeId: string | null;
+};
+
+export type FleetPositions = {
+    /**
+     * The moment the positions are for
+     */
+    at: string;
+    vehicles: Array<VehiclePosition>;
+};
+
+export type TrackingRoute = {
+    id: string;
+    name: string;
+    kind: 'local' | 'regional';
+    /**
+     * [lng, lat] from depot to customer
+     */
+    path: Array<[
+        number,
+        number
+    ]>;
+    /**
+     * Driving time from the depot to the customer, in ms
+     */
+    driveMs: number;
+    /**
+     * A whole trip, in ms: out, unloading at the customer, and back to the depot
+     */
+    roundTripMs: number;
+};
+
+export type TrackingRoutes = {
+    routes: Array<TrackingRoute>;
+};
+
 export type Driver = {
     id: string;
     firstName: string;
@@ -56,47 +170,43 @@ export type Ready = {
     status: 'ready';
 };
 
-export type VehiclePosition = {
-    vehicleId: string;
-    plate: string;
-    type: 'truck' | 'van' | 'car';
-    lng: number;
-    lat: number;
-    /**
-     * Direction of travel, degrees clockwise from north; null while standing
-     */
-    headingDeg: number | null;
-    speedKmh: number;
-    activity: 'to_customer' | 'at_customer' | 'to_depot' | 'at_depot' | 'off_duty';
-    /**
-     * The route the vehicle drives; null when off duty
-     */
-    routeId: string | null;
-};
-
-export type FleetPositions = {
-    /**
-     * The moment the positions are for
-     */
-    at: string;
-    vehicles: Array<VehiclePosition>;
-};
-
-export type TrackingRoute = {
+export type WorkOrder = {
     id: string;
-    name: string;
-    kind: 'local' | 'regional';
     /**
-     * [lng, lat] from depot to customer
+     * Short work order number, e.g. 5012
      */
-    path: Array<[
-        number,
-        number
-    ]>;
+    number: number;
+    kind: 'service' | 'repair' | 'inspection' | 'tyres';
+    /**
+     * Follows the clock: scheduled, then in_progress, then done; or cancelled
+     */
+    status: 'scheduled' | 'in_progress' | 'done' | 'cancelled';
+    vehicle: {
+        id: string;
+        plate: string;
+        type: 'truck' | 'van' | 'car';
+    };
+    /**
+     * In the workshop from
+     */
+    startsAt: string;
+    /**
+     * In the workshop until; no trips for the vehicle in between
+     */
+    endsAt: string;
+    /**
+     * What the work costs, in whole hryvnias
+     */
+    costUah: number;
+    note: string;
+    cancelledAt: string | null;
 };
 
-export type TrackingRoutes = {
-    routes: Array<TrackingRoute>;
+export type WorkOrderList = {
+    /**
+     * Every work order touching those days, by start
+     */
+    items: Array<WorkOrder>;
 };
 
 export type Trip = {
@@ -263,6 +373,96 @@ export type GetReadyResponses = {
 };
 
 export type GetReadyResponse = GetReadyResponses[keyof GetReadyResponses];
+
+export type LoginData = {
+    body: {
+        email: string;
+        password: string;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/v1/auth/login';
+};
+
+export type LoginErrors = {
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '4XX': ProblemDetails;
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '5XX': ProblemDetails;
+};
+
+export type LoginError = LoginErrors[keyof LoginErrors];
+
+export type LoginResponses = {
+    /**
+     * Default Response
+     */
+    200: CurrentUser;
+};
+
+export type LoginResponse = LoginResponses[keyof LoginResponses];
+
+export type LogoutData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/auth/logout';
+};
+
+export type LogoutErrors = {
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '4XX': ProblemDetails;
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '5XX': ProblemDetails;
+};
+
+export type LogoutError = LogoutErrors[keyof LogoutErrors];
+
+export type LogoutResponses = {
+    /**
+     * Signed out
+     */
+    204: void;
+};
+
+export type LogoutResponse = LogoutResponses[keyof LogoutResponses];
+
+export type GetCurrentUserData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/auth/me';
+};
+
+export type GetCurrentUserErrors = {
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '4XX': ProblemDetails;
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '5XX': ProblemDetails;
+};
+
+export type GetCurrentUserError = GetCurrentUserErrors[keyof GetCurrentUserErrors];
+
+export type GetCurrentUserResponses = {
+    /**
+     * Default Response
+     */
+    200: CurrentUser;
+};
+
+export type GetCurrentUserResponse = GetCurrentUserResponses[keyof GetCurrentUserResponses];
 
 export type ListVehiclesData = {
     body?: never;
@@ -461,6 +661,46 @@ export type ListTripsResponses = {
 
 export type ListTripsResponse = ListTripsResponses[keyof ListTripsResponses];
 
+export type CreateTripData = {
+    body: {
+        vehicleId: string;
+        driverId: string;
+        /**
+         * One of the routes from GET /tracking/routes
+         */
+        routeId: string;
+        /**
+         * When it leaves the depot; must be later than now. The return is worked out.
+         */
+        departsAt: string;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/v1/trips';
+};
+
+export type CreateTripErrors = {
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '4XX': ProblemDetails;
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '5XX': ProblemDetails;
+};
+
+export type CreateTripError = CreateTripErrors[keyof CreateTripErrors];
+
+export type CreateTripResponses = {
+    /**
+     * Default Response
+     */
+    201: Trip;
+};
+
+export type CreateTripResponse = CreateTripResponses[keyof CreateTripResponses];
+
 export type GetTripData = {
     body?: never;
     path: {
@@ -491,6 +731,308 @@ export type GetTripResponses = {
 };
 
 export type GetTripResponse = GetTripResponses[keyof GetTripResponses];
+
+export type UpdateTripData = {
+    body: {
+        vehicleId?: string;
+        driverId?: string;
+        /**
+         * One of the routes from GET /tracking/routes
+         */
+        routeId?: string;
+        /**
+         * When it leaves the depot; must be later than now. The return is worked out.
+         */
+        departsAt?: string;
+    };
+    path: {
+        tripId: string;
+    };
+    query?: never;
+    url: '/api/v1/trips/{tripId}';
+};
+
+export type UpdateTripErrors = {
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '4XX': ProblemDetails;
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '5XX': ProblemDetails;
+};
+
+export type UpdateTripError = UpdateTripErrors[keyof UpdateTripErrors];
+
+export type UpdateTripResponses = {
+    /**
+     * Default Response
+     */
+    200: Trip;
+};
+
+export type UpdateTripResponse = UpdateTripResponses[keyof UpdateTripResponses];
+
+export type CancelTripData = {
+    body?: never;
+    path: {
+        tripId: string;
+    };
+    query?: never;
+    url: '/api/v1/trips/{tripId}/cancel';
+};
+
+export type CancelTripErrors = {
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '4XX': ProblemDetails;
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '5XX': ProblemDetails;
+};
+
+export type CancelTripError = CancelTripErrors[keyof CancelTripErrors];
+
+export type CancelTripResponses = {
+    /**
+     * Default Response
+     */
+    200: Trip;
+};
+
+export type CancelTripResponse = CancelTripResponses[keyof CancelTripResponses];
+
+export type ListWorkOrdersData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * The first day, Kyiv time
+         */
+        from: string;
+        /**
+         * The last day, Kyiv time; at most 62 days from `from`
+         */
+        to: string;
+        vehicleId?: string;
+        /**
+         * Follows the clock: scheduled, then in_progress, then done; or cancelled
+         */
+        status?: 'scheduled' | 'in_progress' | 'done' | 'cancelled';
+    };
+    url: '/api/v1/work-orders';
+};
+
+export type ListWorkOrdersErrors = {
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '4XX': ProblemDetails;
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '5XX': ProblemDetails;
+};
+
+export type ListWorkOrdersError = ListWorkOrdersErrors[keyof ListWorkOrdersErrors];
+
+export type ListWorkOrdersResponses = {
+    /**
+     * Default Response
+     */
+    200: WorkOrderList;
+};
+
+export type ListWorkOrdersResponse = ListWorkOrdersResponses[keyof ListWorkOrdersResponses];
+
+export type CreateWorkOrderData = {
+    body: {
+        vehicleId: string;
+        kind: 'service' | 'repair' | 'inspection' | 'tyres';
+        /**
+         * Must be later than now
+         */
+        startsAt: string;
+        /**
+         * At most a week after the start
+         */
+        endsAt: string;
+        costUah: number;
+        note?: string;
+    };
+    path?: never;
+    query?: never;
+    url: '/api/v1/work-orders';
+};
+
+export type CreateWorkOrderErrors = {
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '4XX': ProblemDetails;
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '5XX': ProblemDetails;
+};
+
+export type CreateWorkOrderError = CreateWorkOrderErrors[keyof CreateWorkOrderErrors];
+
+export type CreateWorkOrderResponses = {
+    /**
+     * Default Response
+     */
+    201: WorkOrder;
+};
+
+export type CreateWorkOrderResponse = CreateWorkOrderResponses[keyof CreateWorkOrderResponses];
+
+export type GetWorkOrderData = {
+    body?: never;
+    path: {
+        workOrderId: string;
+    };
+    query?: never;
+    url: '/api/v1/work-orders/{workOrderId}';
+};
+
+export type GetWorkOrderErrors = {
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '4XX': ProblemDetails;
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '5XX': ProblemDetails;
+};
+
+export type GetWorkOrderError = GetWorkOrderErrors[keyof GetWorkOrderErrors];
+
+export type GetWorkOrderResponses = {
+    /**
+     * Default Response
+     */
+    200: WorkOrder;
+};
+
+export type GetWorkOrderResponse = GetWorkOrderResponses[keyof GetWorkOrderResponses];
+
+export type UpdateWorkOrderData = {
+    body: {
+        vehicleId?: string;
+        kind?: 'service' | 'repair' | 'inspection' | 'tyres';
+        /**
+         * Must be later than now
+         */
+        startsAt?: string;
+        /**
+         * At most a week after the start
+         */
+        endsAt?: string;
+        costUah?: number;
+        note?: string;
+    };
+    path: {
+        workOrderId: string;
+    };
+    query?: never;
+    url: '/api/v1/work-orders/{workOrderId}';
+};
+
+export type UpdateWorkOrderErrors = {
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '4XX': ProblemDetails;
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '5XX': ProblemDetails;
+};
+
+export type UpdateWorkOrderError = UpdateWorkOrderErrors[keyof UpdateWorkOrderErrors];
+
+export type UpdateWorkOrderResponses = {
+    /**
+     * Default Response
+     */
+    200: WorkOrder;
+};
+
+export type UpdateWorkOrderResponse = UpdateWorkOrderResponses[keyof UpdateWorkOrderResponses];
+
+export type CancelWorkOrderData = {
+    body?: never;
+    path: {
+        workOrderId: string;
+    };
+    query?: never;
+    url: '/api/v1/work-orders/{workOrderId}/cancel';
+};
+
+export type CancelWorkOrderErrors = {
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '4XX': ProblemDetails;
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '5XX': ProblemDetails;
+};
+
+export type CancelWorkOrderError = CancelWorkOrderErrors[keyof CancelWorkOrderErrors];
+
+export type CancelWorkOrderResponses = {
+    /**
+     * Default Response
+     */
+    200: WorkOrder;
+};
+
+export type CancelWorkOrderResponse = CancelWorkOrderResponses[keyof CancelWorkOrderResponses];
+
+export type GetCostReportData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * The first day, Kyiv time
+         */
+        from: string;
+        /**
+         * The last day, Kyiv time; at most 62 days from `from`
+         */
+        to: string;
+    };
+    url: '/api/v1/costs';
+};
+
+export type GetCostReportErrors = {
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '4XX': ProblemDetails;
+    /**
+     * Problem Details (RFC 9457)
+     */
+    '5XX': ProblemDetails;
+};
+
+export type GetCostReportError = GetCostReportErrors[keyof GetCostReportErrors];
+
+export type GetCostReportResponses = {
+    /**
+     * Default Response
+     */
+    200: CostReport;
+};
+
+export type GetCostReportResponse = GetCostReportResponses[keyof GetCostReportResponses];
 
 export type GetFleetPositionsData = {
     body?: never;

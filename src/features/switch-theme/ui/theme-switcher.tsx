@@ -1,6 +1,4 @@
-import { MonitorIcon, MoonIcon, SunIcon, type LucideIcon } from 'lucide-react'
-
-import { isTheme, useTheme, type Theme } from '@/shared/lib/theme'
+import { isTheme, useTheme } from '@/shared/lib/theme'
 import { Button } from '@/shared/ui/button'
 import {
   DropdownMenu,
@@ -10,11 +8,7 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu'
 
-const THEME_OPTIONS = [
-  { value: 'light', label: 'Light', Icon: SunIcon },
-  { value: 'dark', label: 'Dark', Icon: MoonIcon },
-  { value: 'system', label: 'System', Icon: MonitorIcon },
-] as const satisfies ReadonlyArray<{ value: Theme; label: string; Icon: LucideIcon }>
+import { THEME_OPTIONS } from '../config/theme-options'
 
 export function ThemeSwitcher() {
   const { theme, setTheme } = useTheme()

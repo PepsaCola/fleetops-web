@@ -17,7 +17,9 @@ export const trackingQueries = {
   routes: () =>
     queryOptions({
       queryKey: [...trackingQueries.all(), 'routes'] as const,
-      queryFn: ({ signal }) => listTrackingRoutes({ signal }),
+      // The browser may keep a copy from before the last deploy, so it checks with the API first;
+      // an unchanged copy costs an empty 304
+      queryFn: ({ signal }) => listTrackingRoutes({ signal, cache: 'no-cache' }),
       // Routes only change with a deploy
       staleTime: Infinity,
     }),

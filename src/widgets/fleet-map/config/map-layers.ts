@@ -14,10 +14,12 @@ export const KYIV_REGION = {
   fitBoundsOptions: { padding: 24 },
 }
 
-// MapLibre paints with plain colours, not CSS variables; these match the app's palette
+// MapLibre paints with plain colours, not CSS variables; these match the app's palette.
+// Teal is the workshop everywhere, as in the costs chart.
 export const MOTION_COLORS: Record<Motion, string> = {
   moving: '#2563eb',
   standing: '#f59e0b',
+  workshop: '#0d9488',
   off_duty: '#9ca3af',
 }
 
@@ -39,8 +41,10 @@ export const routeLayer = (theme: ResolvedTheme): LayerProps => ({
 export const vehicleLayer = (theme: ResolvedTheme): LayerProps => ({
   id: VEHICLES_LAYER,
   type: 'circle',
-  // Moving vehicles are drawn on top of standing ones
-  layout: { 'circle-sort-key': ['match', ['get', 'motion'], 'moving', 2, 'standing', 1, 0] },
+  // Moving vehicles are drawn on top, then standing ones, then the workshop
+  layout: {
+    'circle-sort-key': ['match', ['get', 'motion'], 'moving', 3, 'standing', 2, 'workshop', 1, 0],
+  },
   paint: {
     'circle-radius': ['interpolate', ['linear'], ['zoom'], 7, 4, 12, 7],
     'circle-color': [
@@ -50,6 +54,8 @@ export const vehicleLayer = (theme: ResolvedTheme): LayerProps => ({
       MOTION_COLORS.moving,
       'standing',
       MOTION_COLORS.standing,
+      'workshop',
+      MOTION_COLORS.workshop,
       MOTION_COLORS.off_duty,
     ],
     'circle-stroke-width': 1.5,

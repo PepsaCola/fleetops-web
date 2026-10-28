@@ -1,6 +1,6 @@
 import { keepPreviousData, queryOptions } from '@tanstack/react-query'
 
-import { listDrivers, type ListDriversData } from '@/shared/api'
+import { getDriver, listDrivers, type ListDriversData } from '@/shared/api'
 
 export type DriverListQuery = NonNullable<ListDriversData['query']>
 
@@ -14,5 +14,10 @@ export const driverQueries = {
       queryFn: ({ signal }) => listDrivers({ query, signal }),
       // Keep the current page on screen while the next one loads
       placeholderData: keepPreviousData,
+    }),
+  detail: (driverId: string) =>
+    queryOptions({
+      queryKey: [...driverQueries.all(), 'detail', driverId] as const,
+      queryFn: ({ signal }) => getDriver({ path: { driverId }, signal }),
     }),
 }

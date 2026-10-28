@@ -18,7 +18,7 @@ const vehicle = (activity: VehiclePosition['activity']): VehiclePosition => ({
 })
 
 describe('FleetLegend', () => {
-  it('counts the vehicles that are moving, standing and off duty', () => {
+  it('counts the vehicles that are moving, standing, in the workshop and off duty', () => {
     render(
       <FleetLegend
         vehicles={[
@@ -27,6 +27,7 @@ describe('FleetLegend', () => {
           vehicle('at_customer'),
           vehicle('at_depot'),
           vehicle('at_depot'),
+          vehicle('in_workshop'),
           vehicle('off_duty'),
         ]}
         updatedAt="2026-10-27T14:05:09.000Z"
@@ -34,7 +35,7 @@ describe('FleetLegend', () => {
     )
 
     const rows = screen.getAllByRole('listitem').map((row) => row.textContent)
-    expect(rows).toEqual(['Moving2', 'Standing3', 'Off duty1'])
+    expect(rows).toEqual(['Moving2', 'Standing3', 'In the workshop1', 'Off duty1'])
     expect(screen.getByText(/^Updated \d{2}:\d{2}:09$/)).toBeInTheDocument()
   })
 })

@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { Link } from 'react-router'
 
 import {
   DriverDocuments,
@@ -9,6 +10,7 @@ import {
   type Driver,
 } from '@/entities/driver'
 import { createServerColumnHelper, useListTableState, useServerTable } from '@/shared/lib/table'
+import { driverPath } from '@/shared/routes'
 import { DataTable } from '@/shared/ui/data-table'
 import { DataTablePagination } from '@/shared/ui/data-table-pagination'
 import { ErrorState } from '@/shared/ui/error-state'
@@ -27,7 +29,14 @@ const columns = column.columns([
   column.accessor('lastName', {
     header: 'Driver',
     enableSorting: true,
-    cell: ({ row }) => <span className="font-medium">{driverName(row.original)}</span>,
+    cell: ({ row }) => (
+      <Link
+        to={driverPath(row.original.id)}
+        className="font-medium underline-offset-4 hover:underline"
+      >
+        {driverName(row.original)}
+      </Link>
+    ),
   }),
   column.accessor('phone', {
     header: 'Phone',

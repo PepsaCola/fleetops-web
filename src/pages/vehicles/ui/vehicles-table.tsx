@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { Link } from 'react-router'
 
 import {
   VEHICLE_TYPE_LABELS,
@@ -7,6 +8,7 @@ import {
   type Vehicle,
 } from '@/entities/vehicle'
 import { createServerColumnHelper, useListTableState, useServerTable } from '@/shared/lib/table'
+import { vehiclePath } from '@/shared/routes'
 import { DataTable } from '@/shared/ui/data-table'
 import { DataTablePagination } from '@/shared/ui/data-table-pagination'
 import { ErrorState } from '@/shared/ui/error-state'
@@ -26,7 +28,14 @@ const columns = column.columns([
   column.accessor('plate', {
     header: 'Plate',
     enableSorting: true,
-    cell: (info) => <span className="font-mono font-medium">{info.getValue()}</span>,
+    cell: ({ row }) => (
+      <Link
+        to={vehiclePath(row.original.id)}
+        className="font-mono font-medium underline-offset-4 hover:underline"
+      >
+        {row.original.plate}
+      </Link>
+    ),
   }),
   column.accessor('model', {
     header: 'Vehicle',

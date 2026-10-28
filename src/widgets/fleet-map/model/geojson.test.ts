@@ -37,6 +37,8 @@ describe('fleet map GeoJSON', () => {
         [30, 50],
         [30.2, 50],
       ],
+      driveMs: 1_284_000,
+      roundTripMs: 3_768_000,
     }
 
     expect(routesToGeoJson([route]).features[0]).toMatchObject({

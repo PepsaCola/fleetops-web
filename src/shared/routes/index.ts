@@ -1,2 +1,3 @@
 export { isRouteHandle, type RouteHandle } from './handle'
-export { paths } from './paths'
+export { afterLoginPath, loginPath } from './login-redirect'
+export { driverPath, paths, vehiclePath } from './paths'
